@@ -1,0 +1,26 @@
+Description:
+single/multi player game like doodlejump
+goal is to climb as many platforms as possible
+player(s) can only steer left an right (player one with arrow keys, player two with a and d)
+new platforms are spawned above in random distance with min, max values according to the difficulty
+        min increases by time? scroll time increases over time?
+        there must be platforms all the way to the top of the screen
+        platforms shouldn't be out the sides of the screen
+
+Welcome screen
+choose: single player or multi player --> Variable
+single_player/multi_player:
+    choose: difficulty --> Variable --> platform size, platform distance, scrolltime?
+    choose: character --> Variable
+
+
+
+start game --> game loop
+    character starts some distance from the bottom of the window
+    first platform is directly under the player's character
+    character jumps as soon as it hits a platform
+    on the first hit on every new platform the player gets 100? points
+    
+        get distance, get angle, calculate x and y, check if x is on screen, if not flip x
+
+    checking for keypresses
