@@ -27,13 +27,9 @@ class Player:
                 if self.velocity[1] > 0 and self.old_bottom_position < platform_rect.top:
                     self.player_rect.bottom = platform_rect.top
                     self.velocity[1] = -4.5
-                    try:
-                        if platforms[i][2] == 1:
-                            self.score += 100
-                            platforms[i][2] = 0
-                            
-                    except IndexError:
-                        print(i, platforms, platform_rect)
+                    if platforms[i][2] == 1:
+                        self.score += 100
+                        platforms[i][2] = 0
 
         self.player_rect.y += self.velocity[1]
         self.player_rect.centerx = self.pos[0]
