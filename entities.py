@@ -18,6 +18,11 @@ class Player:
         self.score = 0
         self.font = pg.font.SysFont('comicsans', 32)
 
+        if color == 'red':
+            self.player_img = ut.load_image('player1', 32)
+        else:
+            self.player_img = ut.load_image('player2', 32)
+
     def update(self, platforms, platform_rects, movement=(0, 0)):
         self.pos[0] += ((movement[1] - movement[0]) * 5)
         self.velocity[1] = min(8, self.velocity[1] + 0.1)
@@ -54,7 +59,10 @@ class Player:
         x_pos = 175 if left else ut.MAIN_WINDOW_RESOLUTION[0] - 175
         score_to_render = self.font.render(str(self.score), True, 'white')
         self.game.MAIN_WINDOW.blit(score_to_render, (x_pos - score_to_render.get_width() // 2, 15))
-        pg.draw.rect(self.game.GAME_WINDOW_SURF, self.color, self.player_rect)
+        if self.game.player1_flip or self.game.player1_flip:
+            pg.transform.flip(self.player_img, False, True)
+        self.game.GAME_WINDOW_SURF.blit(self.player_img, self.player_rect)
+        # pg.draw.rect(self.game.GAME_WINDOW_SURF, self.color, self.player_rect)
 
 
 class Platform:
@@ -74,6 +82,8 @@ class Platform:
         self.platform_rects = []
         self.platforms.append([self.start_position[0] - self.size[0] // 2, self.start_position[1] + 15, 0])
         self.platform_rects.append(pg.Rect(self.start_position[0] - self.size[0] // 2, self.start_position[1] + 15, *self.size))
+
+        self.platform_img = ut.load_image('platform', self.size[0])
 
     def platform_builder(self):
         distance = randint(self.distances[0], self.distances[1])
@@ -101,7 +111,8 @@ class Platform:
 
     def render(self):
         for platform in self.platforms:
-            pg.draw.rect(self.surface, 'black', (platform[0], platform[1], self.size[0], self.size[1]), border_radius=3)
+            self.surface.blit(self.platform_img, (platform[0], platform[1]))
+            #pg.draw.rect(self.surface, 'black', (platform[0], platform[1], self.size[0], self.size[1]), border_radius=3)
 
     def update(self, moved=True):
         self.platform_handler()

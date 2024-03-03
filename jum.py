@@ -23,7 +23,9 @@ class Game:
 
         self.single_player = None
         self.movement_player1 = [False, False]  # [left, right]
+        self.player1_flip = False
         self.movement_player2 = [False, False]  # [left, right]
+        self.player2_flip = False
         self.moved = False
         self.platform_size = (500, 50)
         self.platform_distances = (250, 500)
@@ -147,13 +149,17 @@ class Game:
                         self.moved = True
                     if event.key == pg.K_LEFT:
                         self.movement_player1[0] = True
+                        self.player1_flip = False
                     if event.key == pg.K_RIGHT:
                         self.movement_player1[1] = True
+                        self.player1_flip = True
                     
                     if event.key == pg.K_a:
                         self.movement_player2[0] = True
+                        self.player2_flip = False
                     if event.key == pg.K_d:
                         self.movement_player2[1] = True
+                        self.player2_flip = True
 
                 if event.type == pg.KEYUP:
                     if event.key == pg.K_LEFT:

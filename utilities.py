@@ -1,3 +1,5 @@
+import pygame as pg
+
 MAIN_WINDOW_RESOLUTION = (1400, 900)
 GAME_WINDOW_RESOLUTION = (700, 850)
 FRAME_THICKNESS = 5
@@ -11,3 +13,8 @@ BUTTON_COLORS = {
     'yellow': {'color': (235, 235, 0), 'hover_color': (255, 255, 50), 'shadow_color': (195, 195, 0), 'frame_color': (125, 125, 0)},
     'red': {'color': (235, 0, 0), 'hover_color': (255, 50, 50), 'shadow_color': (175, 0, 0), 'frame_color': (100, 0, 0)}
     }
+
+def load_image(imagename, width):
+    img = pg.image.load('images/' + imagename + '.png').convert_alpha()
+    height = (width / 10) if width > 32 else 64
+    return pg.transform.scale(img, (width, height))
