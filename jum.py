@@ -1,21 +1,21 @@
 import pygame as pg
 import math, sys
 from random import randint
-from entities import Player, Platform, Button
-import utilities as ut
+from entities import Player, Platform, Button, Clouds
+import settings as sett
 
 class Game:
     def __init__(self):
         pg.init()
         
-        self.MAIN_WINDOW = pg.display.set_mode(ut.MAIN_WINDOW_RESOLUTION)
-        self.GAME_WINDOW_SURF = pg.Surface(ut.GAME_WINDOW_RESOLUTION)
+        self.MAIN_WINDOW = pg.display.set_mode(sett.MAIN_WINDOW_RESOLUTION)
+        self.GAME_WINDOW_SURF = pg.Surface(sett.GAME_WINDOW_RESOLUTION)
 
-        self.start_screen = pg.Surface(ut.MAIN_WINDOW_RESOLUTION)
+        self.start_screen = pg.Surface(sett.MAIN_WINDOW_RESOLUTION)
         self.show_start_screen = True
-        self.difficulty_screen = pg.Surface(ut.MAIN_WINDOW_RESOLUTION)
+        self.difficulty_screen = pg.Surface(sett.MAIN_WINDOW_RESOLUTION)
         self.show_difficulty_screen = True
-        self.button_surface = pg.Surface(ut.MAIN_WINDOW_RESOLUTION)
+        self.button_surface = pg.Surface(sett.MAIN_WINDOW_RESOLUTION)
 
         self.CLOCK = pg.time.Clock()
         self.FPS = 60
@@ -29,12 +29,13 @@ class Game:
         self.moved = False
         self.platform_size = (500, 50)
         self.platform_distances = (250, 500)
+        self.clouds = Clouds()
 
-        self.single_player_button_center_pos = (ut.MAIN_WINDOW_RESOLUTION[0] // 3, ut.MAIN_WINDOW_RESOLUTION[1] // 2)
-        self.two_player_button_center_pos = (ut.MAIN_WINDOW_RESOLUTION[0] // 3 * 2, ut.MAIN_WINDOW_RESOLUTION[1] // 2)
-        self.easy_button_center_pos = (ut.MAIN_WINDOW_RESOLUTION[0] // 4, ut.MAIN_WINDOW_RESOLUTION[1] // 2)
-        self.normal_button_center_pos = (ut.MAIN_WINDOW_RESOLUTION[0] // 2, ut.MAIN_WINDOW_RESOLUTION[1] // 2)
-        self.hard_button_center_pos = (ut.MAIN_WINDOW_RESOLUTION[0] // 4 * 3, ut.MAIN_WINDOW_RESOLUTION[1] // 2)
+        self.single_player_button_center_pos = (sett.MAIN_WINDOW_RESOLUTION[0] // 3, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
+        self.two_player_button_center_pos = (sett.MAIN_WINDOW_RESOLUTION[0] // 3 * 2, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
+        self.easy_button_center_pos = (sett.MAIN_WINDOW_RESOLUTION[0] // 4, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
+        self.normal_button_center_pos = (sett.MAIN_WINDOW_RESOLUTION[0] // 2, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
+        self.hard_button_center_pos = (sett.MAIN_WINDOW_RESOLUTION[0] // 4 * 3, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
 
         self.easy = False
         self.normal = False
@@ -42,13 +43,15 @@ class Game:
         
     def create_game_window(self):
         self.MAIN_WINDOW.fill('black')
-        pg.draw.rect(self.MAIN_WINDOW, 'white', (ut.WINDOW_FRAME_POSITION, ut.WINDOW_FRAME_SIZE), border_radius=3)
+        pg.draw.rect(self.MAIN_WINDOW, 'white', (sett.WINDOW_FRAME_POSITION, sett.WINDOW_FRAME_SIZE), border_radius=3)
         self.GAME_WINDOW_SURF.fill((23, 123, 223))
+        self.clouds.update()
+        self.clouds.render(self.GAME_WINDOW_SURF)
         self.platforms1.render()
-        self.player1.render()
+        self.player1.render(flip=self.player1_flip)
         if not self.single_player:
             self.platforms2.render()
-            self.player2.render(left=False)
+            self.player2.render(left=False, flip=self.player2_flip)
 
         self.MAIN_WINDOW.blit(self.GAME_WINDOW_SURF, (350, 25))
 
@@ -67,19 +70,19 @@ class Game:
             self.angle_limit = (50, 130)
 
         if self.single_player:
-            self.player_1_start_pos = [ut.GAME_WINDOW_RESOLUTION[0] // 2, ut.GAME_WINDOW_RESOLUTION[1] - 100]
-            self.first_platform1 = [ut.GAME_WINDOW_RESOLUTION[0] // 2 - self.platform_size[0] // 2, ut.GAME_WINDOW_RESOLUTION[1] - 50]
+            self.player_1_start_pos = [sett.GAME_WINDOW_RESOLUTION[0] // 2, sett.GAME_WINDOW_RESOLUTION[1] - 100]
+            self.first_platform1 = [sett.GAME_WINDOW_RESOLUTION[0] // 2 - self.platform_size[0] // 2, sett.GAME_WINDOW_RESOLUTION[1] - 50]
         else:
-            self.player_1_start_pos = [ut.GAME_WINDOW_RESOLUTION[0] // 4, ut.GAME_WINDOW_RESOLUTION[1] - 100]
-            self.first_platform1 = [ut.GAME_WINDOW_RESOLUTION[0] // 4 - self.platform_size[0] // 2, ut.GAME_WINDOW_RESOLUTION[1] - 50]
-            self.player_2_start_pos = [ut.GAME_WINDOW_RESOLUTION[0] // 4 * 3, ut.GAME_WINDOW_RESOLUTION[1] - 100]
-            self.first_platform2 = [ut.GAME_WINDOW_RESOLUTION[0] // 4 - self.platform_size[0] // 2, ut.GAME_WINDOW_RESOLUTION[1] - 50]
+            self.player_1_start_pos = [sett.GAME_WINDOW_RESOLUTION[0] // 4, sett.GAME_WINDOW_RESOLUTION[1] - 100]
+            self.first_platform1 = [sett.GAME_WINDOW_RESOLUTION[0] // 4 - self.platform_size[0] // 2, sett.GAME_WINDOW_RESOLUTION[1] - 50]
+            self.player_2_start_pos = [sett.GAME_WINDOW_RESOLUTION[0] // 4 * 3, sett.GAME_WINDOW_RESOLUTION[1] - 100]
+            self.first_platform2 = [sett.GAME_WINDOW_RESOLUTION[0] // 4 - self.platform_size[0] // 2, sett.GAME_WINDOW_RESOLUTION[1] - 50]
 
         self.player1 = Player(self, 'red', self.player_1_start_pos)
-        self.platforms1 = Platform(self, self.GAME_WINDOW_SURF, ut.GAME_WINDOW_RESOLUTION, self.player_1_start_pos, self.platform_size, self.platform_distances, self.angle_limit)
+        self.platforms1 = Platform(self, self.GAME_WINDOW_SURF, sett.GAME_WINDOW_RESOLUTION, self.player_1_start_pos, self.platform_size, self.platform_distances, self.angle_limit)
         if not self.single_player:
             self.player2 = Player(self, 'green', self.player_2_start_pos)
-            self.platforms2 = Platform(self, self.GAME_WINDOW_SURF, ut.GAME_WINDOW_RESOLUTION, self.player_2_start_pos, self.platform_size, self.platform_distances, self.angle_limit)
+            self.platforms2 = Platform(self, self.GAME_WINDOW_SURF, sett.GAME_WINDOW_RESOLUTION, self.player_2_start_pos, self.platform_size, self.platform_distances, self.angle_limit)
 
     def create_difficulty_screen(self): 
         easy_button = Button(self.button_surface, 'Easy', self.easy_button_center_pos, 'green')
@@ -123,7 +126,7 @@ class Game:
             self.show_difficulty_screen = True
 
     def slide_screen_down(self, screen):
-        for i in range((ut.MAIN_WINDOW_RESOLUTION[1] // 10)):
+        for i in range((sett.MAIN_WINDOW_RESOLUTION[1] // 10)):
             self.MAIN_WINDOW.blit(screen, (0, i * 10))
             self.MAIN_WINDOW.blit(self.button_surface, (0, i))
             pg.display.update()
@@ -173,7 +176,7 @@ class Game:
                         self.movement_player2[1] = False
 
     def run(self):
-        self.start_stairs = Platform(self, self.start_screen, ut.MAIN_WINDOW_RESOLUTION, (ut.MAIN_WINDOW_RESOLUTION[0] // 2, ut.MAIN_WINDOW_RESOLUTION[1]), self.platform_size, self.platform_distances)
+        self.start_stairs = Platform(self, self.start_screen, sett.MAIN_WINDOW_RESOLUTION, (sett.MAIN_WINDOW_RESOLUTION[0] // 2, sett.MAIN_WINDOW_RESOLUTION[1]), self.platform_size, self.platform_distances)
         while self.show_start_screen:
             self.CLOCK.tick(self.FPS)
             self.event_handler()
@@ -182,7 +185,7 @@ class Game:
 
         self.slide_screen_down(self.start_screen)
         self.button_surface.fill((0, 0, 0))
-        self.difficulty_stairs = Platform(self, self.difficulty_screen, ut.MAIN_WINDOW_RESOLUTION, (ut.MAIN_WINDOW_RESOLUTION[0] // 2, ut.MAIN_WINDOW_RESOLUTION[1]), self.platform_size, self.platform_distances)
+        self.difficulty_stairs = Platform(self, self.difficulty_screen, sett.MAIN_WINDOW_RESOLUTION, (sett.MAIN_WINDOW_RESOLUTION[0] // 2, sett.MAIN_WINDOW_RESOLUTION[1]), self.platform_size, self.platform_distances)
         while self.show_difficulty_screen:
             self.CLOCK.tick(self.FPS)
             self.event_handler()
@@ -196,6 +199,8 @@ class Game:
             self.CLOCK.tick(self.FPS)
             self.event_handler()
             self.draw_window()
+            
+            
             
             self.player1.update(platforms=self.platforms1.platforms, platform_rects=self.platforms1.platform_rects, movement=self.movement_player1)
             self.platforms1.update(self.moved)
