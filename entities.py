@@ -1,6 +1,6 @@
 import pygame as pg
 import math
-from random import randint
+from random import randint, choice
 import utilities as ut
 import settings as sett
 
@@ -170,13 +170,13 @@ class Cloud:
     def __init__(self, pos, image, depth):
         self.pos = list(pos)
         self.image = pg.transform.scale(image, (image.get_width() // depth, image.get_height() // depth))
+        self.image = pg.transform.flip(self.image, choice([True, False]), False)
         self.depth = depth
 
     def update(self):
-        self.pos[1] += 1 / self.depth            
+        self.pos[1] += 1 / (self.depth * 10)            
 
     def render(self, surf):
-        print('called cloud.render')
         surf.blit(self.image, self.pos)
 
 
@@ -191,7 +191,7 @@ class Clouds:
     def update(self, count=16):
         while True:
             if len(self.clouds) < count:
-                y_pos = sett.GAME_WINDOW_RESOLUTION[1] if self.initial_start else -sett.GAME_WINDOW_RESOLUTION[1] // 2
+                y_pos = sett.GAME_WINDOW_RESOLUTION[1] if self.initial_start else -sett.GAME_WINDOW_RESOLUTION[1] // 4
                 pos = (randint(0, sett.GAME_WINDOW_RESOLUTION[0]), (randint(0, y_pos) if y_pos > 0 else randint(y_pos, 0)))
                 img_number = randint(0, 2)
                 depth = randint(1, 3)
@@ -204,9 +204,8 @@ class Clouds:
         self.clouds.sort(key=lambda x: x.depth)
 
     def render(self, surf):
-        print('called clouds.render')
         for cloud in self.clouds:
             cloud.update()
             cloud.render(surf)
-            if cloud.pos[1] > sett.GAME_WINDOW_RESOLUTION[1] + 100:
+            if cloud.pos[1] > sett.GAME_WINDOW_RESOLUTION[1] + 10:
                 self.clouds.remove(cloud)
