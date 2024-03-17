@@ -143,6 +143,7 @@ class Button:
         self.button_bottom_rect = pg.Rect(pos[0] - self.button_size / 2, pos[1] - self.button_size / 2, self.button_size, self.button_size)
         self.button_offset = 10
         self.button_color = sett.BUTTON_COLORS[self.color_thema]['color']
+        self.clicked = None
 
     def render(self):
         pg.draw.rect(self.surf, sett.BUTTON_COLORS[self.color_thema]['shadow_color'], self.button_bottom_rect, border_radius=50)
@@ -158,12 +159,14 @@ class Button:
             self.button_color = sett.BUTTON_COLORS[self.color_thema]['hover_color']
             if pg.mouse.get_pressed()[0]:
                 self.button_offset = 0
-                return True
+                self.clicked = True
             else:
                 self.button_offset = 10
-                return None
+                if self.clicked == True:
+                    self.clicked = None
         else:
             self.button_color = sett.BUTTON_COLORS[self.color_thema]['color']
+        return self.clicked
 
 
 class Cloud:
