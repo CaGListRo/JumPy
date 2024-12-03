@@ -3,45 +3,49 @@ import math, sys
 from random import randint
 from entities import Player, Platform, Button, Clouds
 import settings as sett
+from typing import Final, TypeVar
+
+Stairs = TypeVar("Stairs")
 
 class Game:
-    def __init__(self):
+    MAIN_WINDOW: Final[pg.display] = pg.display.set_mode(sett.MAIN_WINDOW_RESOLUTION)
+    GAME_WINDOW_SURF: Final[pg.Surface] = pg.Surface(sett.GAME_WINDOW_RESOLUTION)
+    CLOCK: Final[pg.time.Clock] = pg.time.Clock()
+    FPS: Final[int] = 60
+
+    def __init__(self) -> None:    
+        """ Initializes the game class. """
         pg.init()
         
-        self.MAIN_WINDOW = pg.display.set_mode(sett.MAIN_WINDOW_RESOLUTION)
-        self.GAME_WINDOW_SURF = pg.Surface(sett.GAME_WINDOW_RESOLUTION)
+        self.start_screen: pg.Surface = pg.Surface(sett.MAIN_WINDOW_RESOLUTION)
+        self.show_start_screen: bool = True
+        self.difficulty_screen: pg.Surface = pg.Surface(sett.MAIN_WINDOW_RESOLUTION)
+        self.show_difficulty_screen: bool = True
+        self.button_surface: pg.Surface = pg.Surface(sett.MAIN_WINDOW_RESOLUTION)
+ 
+        self.running: bool = True
 
-        self.start_screen = pg.Surface(sett.MAIN_WINDOW_RESOLUTION)
-        self.show_start_screen = True
-        self.difficulty_screen = pg.Surface(sett.MAIN_WINDOW_RESOLUTION)
-        self.show_difficulty_screen = True
-        self.button_surface = pg.Surface(sett.MAIN_WINDOW_RESOLUTION)
+        self.single_player: None | bool = None
+        self.movement_player1: list[bool] = [False, False]  # [left, right]
+        self.player1_flip: bool = False
+        self.movement_player2: list[bool] = [False, False]  # [left, right]
+        self.player2_flip: bool = False
+        self.moved: bool = False
+        self.platform_size: tuple[int] = (500, 50)
+        self.platform_distances: tuple[int] = (250, 500)
 
-        self.CLOCK = pg.time.Clock()
-        self.FPS = 60
-        self.running = True
+        self.single_player_button_center_pos: tuple[int] = (sett.MAIN_WINDOW_RESOLUTION[0] // 3, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
+        self.two_player_button_center_pos: tuple[int] = (sett.MAIN_WINDOW_RESOLUTION[0] // 3 * 2, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
+        self.easy_button_center_pos: tuple[int] = (sett.MAIN_WINDOW_RESOLUTION[0] // 4, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
+        self.normal_button_center_pos: tuple[int] = (sett.MAIN_WINDOW_RESOLUTION[0] // 2, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
+        self.hard_button_center_pos: tuple[int] = (sett.MAIN_WINDOW_RESOLUTION[0] // 4 * 3, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
 
-        self.single_player = None
-        self.movement_player1 = [False, False]  # [left, right]
-        self.player1_flip = False
-        self.movement_player2 = [False, False]  # [left, right]
-        self.player2_flip = False
-        self.moved = False
-        self.platform_size = (500, 50)
-        self.platform_distances = (250, 500)
-
-        self.single_player_button_center_pos = (sett.MAIN_WINDOW_RESOLUTION[0] // 3, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
-        self.two_player_button_center_pos = (sett.MAIN_WINDOW_RESOLUTION[0] // 3 * 2, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
-        self.easy_button_center_pos = (sett.MAIN_WINDOW_RESOLUTION[0] // 4, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
-        self.normal_button_center_pos = (sett.MAIN_WINDOW_RESOLUTION[0] // 2, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
-        self.hard_button_center_pos = (sett.MAIN_WINDOW_RESOLUTION[0] // 4 * 3, sett.MAIN_WINDOW_RESOLUTION[1] // 2)
-
-        self.easy = False
-        self.normal = False
-        self.hard = False
+        self.easy: bool = False
+        self.normal: bool = False
+        self.hard: bool = False
         
-    def create_game_window(self):
-        self.difficulty_stairs = None
+    def create_game_window(self) -> None:
+        self.difficulty_stairs: None | Stairs = None
         self.MAIN_WINDOW.fill('black')
         pg.draw.rect(self.MAIN_WINDOW, 'white', (sett.WINDOW_FRAME_POSITION, sett.WINDOW_FRAME_SIZE), border_radius=3)
         self.GAME_WINDOW_SURF.fill((23, 123, 223))
