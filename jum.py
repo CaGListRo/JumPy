@@ -1,8 +1,9 @@
-import pygame as pg
-import math, sys
-from random import randint
+
 from entities import Player, Platform, Button, Clouds
 import settings as sett
+
+import pygame as pg
+import sys
 from typing import Final, TypeVar
 
 Stairs = TypeVar("Stairs")
@@ -45,9 +46,10 @@ class Game:
         self.hard: bool = False
         
     def create_game_window(self) -> None:
+        """ Creates the game window. """
         self.difficulty_stairs: None | Stairs = None
-        self.MAIN_WINDOW.fill('black')
-        pg.draw.rect(self.MAIN_WINDOW, 'white', (sett.WINDOW_FRAME_POSITION, sett.WINDOW_FRAME_SIZE), border_radius=3)
+        self.MAIN_WINDOW.fill("black")
+        pg.draw.rect(self.MAIN_WINDOW, "white", (sett.WINDOW_FRAME_POSITION, sett.WINDOW_FRAME_SIZE), border_radius=3)
         self.GAME_WINDOW_SURF.fill((23, 123, 223))
         self.clouds.update()
         self.clouds.render(self.GAME_WINDOW_SURF)
@@ -59,7 +61,8 @@ class Game:
 
         self.MAIN_WINDOW.blit(self.GAME_WINDOW_SURF, (350, 25))
 
-    def create_game_data(self):
+    def create_game_data(self) -> None:
+        """ Creates the game data. """
         if self.easy:
             self.platform_size = (150, 15)
             self.platform_distances = (40, 80)
@@ -83,13 +86,14 @@ class Game:
             self.first_platform2 = [sett.GAME_WINDOW_RESOLUTION[0] // 4 - self.platform_size[0] // 2, sett.GAME_WINDOW_RESOLUTION[1] - 50]
 
         self.clouds = Clouds()
-        self.player1 = Player(self, 'red', self.player_1_start_pos)
+        self.player1 = Player(self, "red", self.player_1_start_pos)
         self.platforms1 = Platform(self, self.GAME_WINDOW_SURF, sett.GAME_WINDOW_RESOLUTION, self.player_1_start_pos, self.platform_size, self.platform_distances, self.angle_limit)
         if not self.single_player:
-            self.player2 = Player(self, 'green', self.player_2_start_pos)
+            self.player2 = Player(self, "green", self.player_2_start_pos)
             self.platforms2 = Platform(self, self.GAME_WINDOW_SURF, sett.GAME_WINDOW_RESOLUTION, self.player_2_start_pos, self.platform_size, self.platform_distances, self.angle_limit)
 
-    def update_difficulty_screen(self):    
+    def update_difficulty_screen(self) -> None:
+        """ Updates the difficulty screen. """
         self.easy = self.easy_button.check_collision()
         self.normal = self.normal_button.check_collision()
         self.hard = self.hard_button.check_collision()
@@ -101,27 +105,27 @@ class Game:
         self.difficulty_stairs.render()
         self.difficulty_screen.set_alpha(125)
         self.MAIN_WINDOW.blit(self.difficulty_screen, (0, 0))
-        self.button_surface.set_colorkey('black')
+        self.button_surface.set_colorkey("black")
         self.MAIN_WINDOW.blit(self.button_surface, (0, 0))
         self.easy_button.render()
         self.normal_button.render()
         self.hard_button.render()
         if self.easy or self.normal or self.hard:
-            print('Difficulty selected!')
+            print("Difficulty selected!")
             self.show_difficulty_screen = False
 
-    def create_difficulty_screen(self):
-        self.start_stairs = None
-        self.clouds = Clouds()
-        self.easy_button = Button(self.button_surface, 'Easy', self.easy_button_center_pos, 'green')
-        self.normal_button = Button(self.button_surface, 'Normal', self.normal_button_center_pos, 'yellow')
-        self.hard_button = Button(self.button_surface, 'Hard', self.hard_button_center_pos, 'red')
+    def create_difficulty_screen(self) -> None:
+        self.start_stairs: None | Stairs = None
+        self.clouds: Clouds = Clouds()
+        self.easy_button: Button = Button(self.button_surface, "Easy", self.easy_button_center_pos, "green")
+        self.normal_button: Button = Button(self.button_surface, "Normal", self.normal_button_center_pos, "yellow")
+        self.hard_button: Button = Button(self.button_surface, "Hard", self.hard_button_center_pos, "red")
 
-    def update_start_screen(self):
-        self.single_player= self.single_player_button.check_collision()
+    def update_start_screen(self) -> None:
+        """ Updates the start screen. """
+        self.single_player = self.single_player_button.check_collision()
         two_player = self.two_player_button.check_collision()
-        if two_player:
-            self.single_player = False
+        self.single_player = False if two_player else True
         self.MAIN_WINDOW.fill((23, 123, 223))
         self.start_screen.fill((23, 123, 223))
         self.clouds.update()
@@ -131,28 +135,31 @@ class Game:
         self.start_screen.set_alpha(125)
         self.MAIN_WINDOW.blit(self.start_screen, (0, 0))
         
-        self.button_surface.set_colorkey('black')
+        self.button_surface.set_colorkey("black")
         self.MAIN_WINDOW.blit(self.button_surface, (0, 0))
         self.single_player_button.render()
         self.two_player_button.render()
         if self.single_player or two_player:
-            print('player selected')
+            print("player selected")
             self.show_difficulty_screen = True
             self.show_start_screen = False
 
-    def create_start_screen(self):
-        self.clouds = Clouds()
-        self.start_stairs = Platform(self, self.start_screen, sett.MAIN_WINDOW_RESOLUTION, (sett.MAIN_WINDOW_RESOLUTION[0] // 2, sett.MAIN_WINDOW_RESOLUTION[1]), self.platform_size, self.platform_distances)
-        self.single_player_button = Button(self.button_surface, 'One Player', self.single_player_button_center_pos, 'green')
-        self.two_player_button = Button(self.button_surface, 'Two Players', self.two_player_button_center_pos, 'green')
+    def create_start_screen(self) -> None:
+        """ Creates the start screen. """
+        self.clouds: Clouds = Clouds()
+        self.start_stairs: None | Stairs = Platform(self, self.start_screen, sett.MAIN_WINDOW_RESOLUTION, (sett.MAIN_WINDOW_RESOLUTION[0] // 2, sett.MAIN_WINDOW_RESOLUTION[1]), self.platform_size, self.platform_distances)
+        self.single_player_button: Button = Button(self.button_surface, "One Player", self.single_player_button_center_pos, "green")
+        self.two_player_button: Button = Button(self.button_surface, "Two Players", self.two_player_button_center_pos, "green")
 
     def slide_screen_down(self, screen):
+        """ Slides the screen down. """
         for i in range((sett.MAIN_WINDOW_RESOLUTION[1] // 10)):
             self.MAIN_WINDOW.blit(screen, (0, i * 10))
             self.MAIN_WINDOW.blit(self.button_surface, (0, i))
             pg.display.update()
 
-    def event_handler(self):
+    def event_handler(self) -> None:
+        """ Handles all the events in the game. """
         for event in pg.event.get():
                 if event.type == pg.QUIT:
                     self.running = False
@@ -187,7 +194,8 @@ class Game:
                     if event.key == pg.K_d:
                         self.movement_player2[1] = False
 
-    def run(self):
+    def run(self) -> None:
+        """ Runs the game. """
         self.create_start_screen()
         while self.show_start_screen:
             self.update_start_screen()
@@ -197,7 +205,7 @@ class Game:
 
         self.slide_screen_down(self.start_screen)
         self.create_difficulty_screen()
-        self.button_surface.fill((0, 0, 0))
+        self.button_surface.fill("black")
         self.difficulty_stairs = Platform(self, self.difficulty_screen, sett.MAIN_WINDOW_RESOLUTION, (sett.MAIN_WINDOW_RESOLUTION[0] // 2, sett.MAIN_WINDOW_RESOLUTION[1]), self.platform_size, self.platform_distances)
         while self.show_difficulty_screen:
             self.update_difficulty_screen()
@@ -221,5 +229,5 @@ class Game:
             pg.display.update()
                         
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     Game().run()    

@@ -4,29 +4,49 @@ from random import randint, choice
 import utilities as ut
 import settings as sett
 
+from typing import TypeVar
+
+Game = TypeVar("Game")
+Platform_objects = TypeVar("Platform_objects")
+Platform_rects = TypeVar("Platform_rects")
+
 
 class Player:
-    def __init__(self, game, color, pos):
-        self.pos = list(pos)
-        self.game = game
-        self.color = color
-        self.velocity = [0, 0]
+    def __init__(self, game: Game, color: str, pos: tuple[int]) -> None:
+        """
+        Initialize the player object.
+        Args:
+        game (Game): The game object.
+        color (str): The color of the player.
+        pos (tuple[int]): The initial position of the player.
+        """
+        self.pos: list[int] = list(pos)
+        self.game: Game = game
+        self.color: str = color
+        self.velocity: list[int] = [0, 0]
 
-        self.player_rect = pg.Rect(self.pos[0] - 16, self.pos[1] - 64, 32, 64)
-        self.old_bottom_position = self.player_rect.bottom
-        self.frame_counter = 0
+        self.player_rect: pg.Rect = pg.Rect(self.pos[0] - 16, self.pos[1] - 64, 32, 64)
+        self.old_bottom_position: tuple[int] = self.player_rect.bottom
+        self.frame_counter: int = 0
 
-        self.score = 0
-        self.font = pg.font.SysFont('comicsans', 32)
+        self.score: int = 0
+        self.font: pg.font.Font = pg.font.SysFont('comicsans', 32)
 
-        self.is_flipped = False
+        self.is_flipped: bool = False
 
         if color == 'red':
-            self.player_img = pg.transform.scale(ut.load_image('player1'), (32, 64))
+            self.player_img: pg.Surface = pg.transform.scale(ut.load_image('player1'), (32, 64))
         else:
-            self.player_img = pg.transform.scale(ut.load_image('player2'), (32, 64))
+            self.player_img: pg.Surface = pg.transform.scale(ut.load_image('player2'), (32, 64))
 
-    def update(self, platforms, platform_rects, movement=(0, 0)):
+    def update(self, platforms: list[Platform_objects], platform_rects: list[Platform_rects], movement: tuple[int] = (0, 0)) -> None:
+        """
+        Update the player position and velocity.
+        Args:
+        platforms (Platform_objects): The list of platform objects.
+        platform_rects (Platform_rects): The list of platform rectangles.
+        movement (tuple[int]): The movement of the player.
+        """
         self.pos[0] += ((movement[1] - movement[0]) * 5)
         self.velocity[1] = min(8, self.velocity[1] + 0.1)
         i=0
@@ -58,7 +78,13 @@ class Player:
             self.frame_counter = 0
         self.frame_counter += 1
 
-    def render(self, flip, left=True):
+    def render(self, flip: bool, left: bool = True) -> None:
+        """
+        Render the player.
+        Args:
+        flip (bool): Whether to flip the player image.
+        left (bool): Whether the player is on the left side of the screen.
+        """
         x_pos = 175 if left else sett.MAIN_WINDOW_RESOLUTION[0] - 175
         score_to_render = self.font.render(str(self.score), True, 'white')
         self.game.MAIN_WINDOW.blit(score_to_render, (x_pos - score_to_render.get_width() // 2, 15))
@@ -73,27 +99,39 @@ class Player:
 
 
 class Platform:
-    def __init__(self, game, surf, game_window_res, start_position, platform_size = (100, 10), platform_distances = (50, 100), angle_limit = (10, 170)):
-        self.game = game
-        self.surface = surf
-        self.game_res = game_window_res
-        self.start_position = start_position
-        self.size = platform_size
-        self.distances = platform_distances
-        self.angle_limit = angle_limit
+    def __init__(self, game: Game, surf: pg.Surface, game_window_res: tuple[int], start_position: tuple[int], platform_size: tuple[int] = (100, 10), platform_distances: tuple[int] = (50, 100), angle_limit: tuple[int] = (10, 170)) -> None:
+        """
+        Initialize the platform.
+        Args:
+        game (Game): The game instance.
+        surf (pg.Surface): The surface to draw the platform on.
+        game_window_res (tuple[int]): The resolution of the game window.
+        start_position (tuple[int]): The starting position of the platform.
+        platform_size (tuple[int]): The size of the platform.
+        platform_distances (tuple[int]): The distance between platforms.
+        angle_limit (tuple[int]): The angle limit of one platform to the next platform.
+        """
+        self.game: Game = game
+        self.surface: pg.Surface = surf
+        self.game_res: tuple[int] = game_window_res
+        self.start_position: tuple[int] = start_position
+        self.size: tuple[int] = platform_size
+        self.distances: tuple[int] = platform_distances
+        self.angle_limit: tuple[int] = angle_limit
 
-        self.scrollfactor = 1
-        self.update_timer = 0
-        self.timer_unit = 2
+        self.scroll_factor: int = 1
+        self.update_timer: float = 0.0
+        self.timer_unit: float = 2.0
 
-        self.platforms = []
-        self.platform_rects = []
+        self.platforms: list[Platform_objects] = []
+        self.platform_rects: list[Platform_rects] = []
         self.platforms.append([self.start_position[0] - self.size[0] // 2, self.start_position[1] + 15, 0])
         self.platform_rects.append(pg.Rect(self.start_position[0] - self.size[0] // 2, self.start_position[1] + 15, *self.size))
 
-        self.platform_img = pg.transform.scale(ut.load_image('platform'), (self.size[0], self.size[0] // 10))
+        self.platform_img: pg.Surface = pg.transform.scale(ut.load_image('platform'), (self.size[0], self.size[0] // 10))
 
-    def platform_builder(self):
+    def platform_builder(self) -> None:
+        """ Build the platforms. """
         distance = randint(self.distances[0], self.distances[1])
         angle = randint(self.angle_limit[0], self.angle_limit[1])
         relativ_platform_pos = [int((math.cos(math.radians(angle)) * distance)), int((math.sin(math.radians(angle)) * distance))]
@@ -103,7 +141,8 @@ class Platform:
         self.platform_rects.append(pg.Rect(new_platform[0], new_platform[1], *self.size))
         self.platforms.append(new_platform)
    
-    def platform_handler(self):
+    def platform_handler(self) -> None:
+        """ Handle the platforms. """
         while self.platforms[-1][1] > -100:
             self.platform_builder()
             
@@ -111,18 +150,25 @@ class Platform:
             self.platforms.pop(0)
             self.platform_rects.pop(0)
 
-    def scroll_platforms_down(self):
+    def scroll_platforms_down(self) -> None:
+        """ Scroll the platforms down. """
         for platform in self.platforms:
-            platform[1] += self.scrollfactor
+            platform[1] += self.scroll_factor
         for platform_rect in self.platform_rects:
-            platform_rect[1] += self.scrollfactor
+            platform_rect[1] += self.scroll_factor
 
-    def render(self):
+    def render(self) -> None:
+        """ Render the platforms. """
         for platform in self.platforms:
             self.surface.blit(self.platform_img, (platform[0], platform[1]))
             #pg.draw.rect(self.surface, 'black', (platform[0], platform[1], self.size[0], self.size[1]), border_radius=3)
 
-    def update(self, moved=True):
+    def update(self, moved: bool = True) -> None:
+        """
+        Update the platforms.
+        Args:
+        moved (bool): Whether the player has moved. Defaults to True.
+        """
         self.platform_handler()
         if moved:
             self.update_timer += self.timer_unit
