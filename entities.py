@@ -4,11 +4,12 @@ from random import randint, choice
 import utilities as ut
 import settings as sett
 
-from typing import TypeVar
+from typing import TypeVar, Final
 
 Game = TypeVar("Game")
 Platform_objects = TypeVar("Platform_objects")
 Platform_rects = TypeVar("Platform_rects")
+Cloud = TypeVar("Cloud")
 
 
 class Player:
@@ -178,66 +179,98 @@ class Platform:
                 self.timer_unit += 0.2
 
 class Button:
-    def __init__(self, surf, text, pos, color_thema):
-        self.surf = surf
-        self.text = text
-        self.pos = list(pos)
-        self.color_thema = color_thema
-        self.button_size = 300
-        self.font = pg.font.SysFont('comicsans', 32)
-        self.button_top_rect = pg.Rect(pos[0] - self.button_size / 2, pos[1] - self.button_size / 2, self.button_size, self.button_size)
-        self.button_bottom_rect = pg.Rect(pos[0] - self.button_size / 2, pos[1] - self.button_size / 2, self.button_size, self.button_size)
-        self.button_offset = 10
-        self.button_color = sett.BUTTON_COLORS[self.color_thema]['color']
-        self.clicked = None
+    BUTTON_SIZE: Final[int] = 300
+    BUTTON_OFFSET: Final[int] = 10
 
-    def render(self):
-        pg.draw.rect(self.surf, sett.BUTTON_COLORS[self.color_thema]['shadow_color'], self.button_bottom_rect, border_radius=50)
+    def __init__(self, surf: pg.Surface, text: str, pos: tuple[int], color_theme: str) -> None:
+        """
+        Initialize an button object.
+        Args:
+        surf (pg.Surface): The surface to draw the button on.
+        text (str): The text to display on the button.
+        pos (tuple[int]): The position of the button.
+        color_theme (str): The color theme of the button.
+        """
+        self.surf: pg.Surface = surf
+        self.text: str = text
+        self.pos: list[int] = list(pos)
+        self.color_theme: str = color_theme
+        self.font: pg.font.Font = pg.font.SysFont('comicsans', 32)
+        self.button_top_rect: pg.Rect = pg.Rect(pos[0] - self.BUTTON_SIZE / 2, pos[1] - self.BUTTON_SIZE / 2, self.BUTTON_SIZE, self.BUTTON_SIZE)
+        self.button_bottom_rect: pg.Rect = pg.Rect(pos[0] - self.BUTTON_SIZE / 2, pos[1] - self.BUTTON_SIZE / 2, self.BUTTON_SIZE, self.BUTTON_SIZE)
+        self.button_offset: int = self.BUTTON_OFFSET
+        self.button_color: tuple[int] = sett.BUTTON_COLORS[self.color_theme]['color']
+        self.clicked: None | bool = None
+
+    def render(self) -> None:
+        """ Render the button. """
+        pg.draw.rect(self.surf, sett.BUTTON_COLORS[self.color_theme]['shadow_color'], self.button_bottom_rect, border_radius=50)
         pg.draw.rect(self.surf, sett.BLACK, self.button_bottom_rect, border_radius=50, width=1)
         pg.draw.rect(self.surf, self.button_color, (self.button_top_rect[0], self.button_top_rect[1] - self.button_offset, self.button_top_rect[2], self.button_top_rect[3]), border_radius=50)
-        pg.draw.rect(self.surf, sett.BUTTON_COLORS[self.color_thema]['frame_color'], (self.button_top_rect[0], self.button_top_rect[1] - self.button_offset, self.button_top_rect[2], self.button_top_rect[3]), border_radius=50, width=3)
+        pg.draw.rect(self.surf, sett.BUTTON_COLORS[self.color_theme]['frame_color'], (self.button_top_rect[0], self.button_top_rect[1] - self.button_offset, self.button_top_rect[2], self.button_top_rect[3]), border_radius=50, width=3)
         text_surf = self.font.render(self.text, True, sett.BLACK)
         self.surf.blit(text_surf, (self.pos[0] - text_surf.get_width() // 2, self.pos[1] - text_surf.get_height() // 2 - self.button_offset))
 
-    def check_collision(self):
-        mouse_pos = pg.mouse.get_pos()
+    def check_collision(self) -> None | bool:
+        mouse_pos: tuple[int] = pg.mouse.get_pos()
         if self.button_top_rect.collidepoint(mouse_pos):
-            self.button_color = sett.BUTTON_COLORS[self.color_thema]['hover_color']
+            self.button_color = sett.BUTTON_COLORS[self.color_theme]['hover_color']
             if pg.mouse.get_pressed()[0]:
                 self.button_offset = 0
                 self.clicked = True
             else:
-                self.button_offset = 10
+                self.button_offset = self.BUTTON_OFFSET
                 if self.clicked == True:
                     self.clicked = None
         else:
-            self.button_color = sett.BUTTON_COLORS[self.color_thema]['color']
+            self.button_color = sett.BUTTON_COLORS[self.color_theme]['color']
         return self.clicked
 
 
 class Cloud:
-    def __init__(self, pos, image, depth):
-        self.pos = list(pos)
-        self.image = pg.transform.scale(image, (image.get_width() // depth, image.get_height() // depth))
+    def __init__(self, pos: tuple[int], image: pg.Surface, depth: int) -> None:
+        """
+        Initialize a cloud object.
+        Args:
+        pos (tuple[int]): The position of the cloud.
+        image (pg.Surface): The image of the cloud.
+        depth (int): The depth of the cloud.
+        """
+        self.pos: list[int] = list(pos)
+        self.image: pg.Surface = pg.transform.scale(image, (image.get_width() // depth, image.get_height() // depth))
         self.image = pg.transform.flip(self.image, choice([True, False]), False)
-        self.depth = depth
+        self.depth: int = depth
 
-    def update(self):
+    def update(self) -> None:
+        """ Update the cloud's position. """
         self.pos[1] += 1 / (self.depth * 10)            
 
-    def render(self, surf):
+    def render(self, surf: pg.Surface) -> None:
+        """
+        Render the cloud on the given surface.
+        Args:
+        surf (pg.Surface): The surface to render the cloud on.
+        """
         surf.blit(self.image, self.pos)
 
 
 class Clouds:
-    def __init__(self):
-        self.cloud_images = []
-        self.clouds = []
-        self.initial_start = True
+    def __init__(self) -> None:
+        """
+        Initializes an Cloud-Manager object.
+        """
+        self.cloud_images: list[pg.Surface] = []
+        self.clouds: list[Cloud] = []
+        self.initial_start: bool = True
         for i in range(1, 4):
             self.cloud_images.append(ut.load_image('cloud' + str(i)))
 
-    def update(self, count=16):
+    def update(self, count=16) -> None:
+        """
+        Creates and updates the clouds.
+        Args:
+        count (int): The number of clouds to create/have.
+        """
         while True:
             if len(self.clouds) < count:
                 y_pos = sett.GAME_WINDOW_RESOLUTION[1] if self.initial_start else -sett.GAME_WINDOW_RESOLUTION[1] // 4
@@ -252,7 +285,12 @@ class Clouds:
 
         self.clouds.sort(key=lambda x: x.depth)
 
-    def render(self, surf):
+    def render(self, surf: pg.Surface) -> None:
+        """
+        Renders all clouds on the given surface and deletes them if they are off the screen.
+        Args:
+        surf (pg.Surface): The surface to render the clouds on.
+        """
         for cloud in self.clouds:
             cloud.update()
             cloud.render(surf)
